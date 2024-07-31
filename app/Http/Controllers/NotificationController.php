@@ -11,7 +11,6 @@ use Exception;
 
 class NotificationController extends Controller
 {
-    // Метод для создания уведомления и отправки его в очередь RabbitMQ
     public function create(Request $request)
     {
         $request->validate([
@@ -22,13 +21,11 @@ class NotificationController extends Controller
 
         $notification = $request->all();
 
-        // Отправка уведомления в очередь RabbitMQ
         $this->sendToQueue($notification);
 
         return response()->json(['status' => 'Notification queued'], 201);
     }
 
-    // Метод для отправки данных в очередь RabbitMQ
     protected function sendToQueue($data)
     {
         $config = config('rabbitmq');
@@ -46,7 +43,6 @@ class NotificationController extends Controller
 
             $channel->basic_publish($msg, '', $config['queue']);
 
-            // Логирование отправки сообщения
             Log::info("Sent to queue: " . $msg->getBody());
 
             $channel->close();
@@ -56,7 +52,6 @@ class NotificationController extends Controller
         }
     }
 
-    // Метод для получения списка уведомлений из базы данных
     public function index()
     {
         $notifications = Notification::all();

@@ -38,29 +38,25 @@ class ConsumeNotifications extends Command
                 try {
                     $data = json_decode($msg->body, true);
 
-                    // Логирование полученного сообщения
                     Log::info('Received from queue: ' . $msg->body);
 
-                    // Сохраняем уведомление в базу данных
                     Notification::create([
                         'recipient' => $data['recipient'],
                         'sender' => $data['sender'],
                         'message' => $data['message'],
                     ]);
 
-                    // Подтверждаем обработку сообщения
                     $channel->basic_ack($msg->delivery_info['delivery_tag']);
                 } catch (Exception $e) {
                     Log::error('Error processing message: ' . $e->getMessage());
-                    $channel->basic_nack($msg->delivery_info['delivery_tag'], false, true); // Сообщаем RabbitMQ о неудачной обработке и просим повторную доставку
+                    $channel->basic_nack($msg->delivery_info['delivery_tag'], false, true); 
                 }
             };
 
             $channel->basic_consume($config['queue'], '', false, false, false, false, $callback);
 
-            // Используем цикл с проверкой флага для остановки потребителя
             while (!$this->shouldStop) {
-                $channel->wait(null, false, 5000); // Таймаут 5 секунд для проверки флага остановки
+                $channel->wait(null, false, 5000); 
             }
 
             $channel->close();
